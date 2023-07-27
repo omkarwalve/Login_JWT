@@ -25,22 +25,15 @@ verifyToken = (req, res, next) => {
 };
 
 isAdmin = (req, res, next) => {
-  User.findById(req.userId).exec((err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
+  User.findById(req.userId).exec().then((user) => {
+  
 
     Role.find(
       {
         _id: { $in: user.roles }
-      },
-      (err, roles) => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
-
+      })
+      .then((roles) => {
+     
         for (let i = 0; i < roles.length; i++) {
           if (roles[i].name === "admin") {
             next();
@@ -51,27 +44,20 @@ isAdmin = (req, res, next) => {
         res.status(403).send({ message: "Require Admin Role!" });
         return;
       }
-    );
-  });
+    ).catch(err=> res.status(500).send({ message: err }))
+  })
+  .catch((err)=>res.status(500).send({ message: err }))
 };
 
 isModerator = (req, res, next) => {
-  User.findById(req.userId).exec((err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
+  User.findById(req.userId).exec().then(( user) => {
 
     Role.find(
       {
         _id: { $in: user.roles }
-      },
-      (err, roles) => {
-        if (err) {
-          res.status(500).send({ message: err });
-          return;
-        }
-
+      })
+      .then((roles) => {
+     
         for (let i = 0; i < roles.length; i++) {
           if (roles[i].name === "moderator") {
             next();
@@ -82,8 +68,9 @@ isModerator = (req, res, next) => {
         res.status(403).send({ message: "Require Moderator Role!" });
         return;
       }
-    );
-  });
+    ).catch(err=>res.status(500).send({ message: err }));
+  })
+  .catch(err=>res.status(500).send({ message: err }));
 };
 
 const authJwt = {
